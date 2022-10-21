@@ -11,6 +11,8 @@ use std::sync::Arc;
 use tracing_subscriber::layer::Layered;
 use tracing_subscriber::Registry;
 use tracing_wasm::WASMLayer;
+use std::cell::RefCell;
+use std::rc::Rc;
 use url::Url;
 use wasm_bindgen::JsCast;
 use wasm_bindgen_futures::{spawn_local, JsFuture};
@@ -18,8 +20,11 @@ use web_sys::{
     window, Blob, BlobPropertyBag, Request as WebRequest, RequestInit, Response as WebResponse,
 };
 
+use crate::{JavascriptPlayer, JsSocket};
+
 pub struct WebNavigatorBackend {
     log_subscriber: Arc<Layered<WASMLayer, Registry>>,
+    js_player: JavascriptPlayer,
     allow_script_access: bool,
     upgrade_to_https: bool,
     base_url: Option<Url>,
@@ -27,6 +32,7 @@ pub struct WebNavigatorBackend {
 
 impl WebNavigatorBackend {
     pub fn new(
+        js_player: JavascriptPlayer,
         allow_script_access: bool,
         upgrade_to_https: bool,
         base_url: Option<String>,
@@ -66,6 +72,7 @@ impl WebNavigatorBackend {
         }
 
         Self {
+            js_player,
             allow_script_access,
             upgrade_to_https,
             base_url,
@@ -253,9 +260,98 @@ impl NavigatorBackend for WebNavigatorBackend {
 
     fn connect_xml_socket(
         &mut self,
-        _host: &str,
-        _port: u16,
+        host: &str,
+        port: u16,
     ) -> Option<Box<dyn XmlSocketConnection>> {
+        if let Some(promise) = self.js_player.connect_xml_socket(host, port) {
+            let mutex: Box<dyn XmlSocketConnection> = Box::new(PendingConnectionSocket);
+            let mutex = Rc::from(RefCell::from(mutex));
+
+            {
+                let mutex = mutex.clone();
+
+                self.spawn_future(Box::pin(async move {
+                    let socket = JsFuture::from(promise)
+                        .await
+                        .ok()
+                        .and_then(|v| v.dyn_into::<JsSocket>().ok());
+
+                    *mutex.borrow_mut() = if let Some(socket) = socket {
+                        Box::new(socket)
+                    } else {
+                        Box::new(DenySocket)
+                    };
+
+                    Ok(())
+                }));
+            }
+
+            return Some(Box::new(DelegatedSocketConnection(mutex)));
+        }
         None
+    }
+}
+
+struct DelegatedSocketConnection(Rc<RefCell<Box<dyn XmlSocketConnection>>>);
+
+impl XmlSocketConnection for DelegatedSocketConnection {
+    fn is_connected(&self) -> Option<bool> {
+        self.0
+            .borrow()
+            .is_connected()
+    }
+
+    fn send(&mut self, buf: Vec<u8>) {
+        self.0
+            .borrow_mut()
+            .send(buf);
+    }
+
+    fn poll(&mut self) -> Option<Vec<u8>> {
+        self.0
+            .borrow_mut()
+            .poll()
+    }
+}
+
+struct PendingConnectionSocket;
+
+impl XmlSocketConnection for PendingConnectionSocket {
+    fn is_connected(&self) -> Option<bool> {
+        None
+    }
+
+    fn send(&mut self, _buf: Vec<u8>) {}
+
+    fn poll(&mut self) -> Option<Vec<u8>> {
+        None
+    }
+}
+
+struct DenySocket;
+
+impl XmlSocketConnection for DenySocket {
+    fn is_connected(&self) -> Option<bool> {
+        Some(false)
+    }
+
+    fn send(&mut self, _buf: Vec<u8>) {}
+
+    fn poll(&mut self) -> Option<Vec<u8>> {
+        None
+    }
+}
+
+impl XmlSocketConnection for JsSocket {
+    fn is_connected(&self) -> Option<bool> {
+        Some(JsSocket::is_connected(self))
+    }
+
+    fn send(&mut self, buf: Vec<u8>) {
+        JsSocket::send(&*self, buf);
+    }
+
+    fn poll(&mut self) -> Option<Vec<u8>> {
+        JsSocket::poll(&*self)
     }
 }
