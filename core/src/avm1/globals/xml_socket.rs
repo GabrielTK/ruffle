@@ -18,7 +18,7 @@ const PROTO_DECLS: &[Declaration] = declare_properties! {
 
 /// XMLSocket constructor
 pub fn constructor<'gc>(
-    _activation: &mut Activation<'_, 'gc, '_>,
+    _activation: &mut Activation<'_, 'gc>,
     this: Object<'gc>,
     _args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -26,7 +26,7 @@ pub fn constructor<'gc>(
 }
 
 fn connect<'gc>(
-    activation: &mut Activation<'_, 'gc, '_>,
+    activation: &mut Activation<'_, 'gc>,
     this: Object<'gc>,
     args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -66,7 +66,7 @@ fn connect<'gc>(
 }
 
 fn close<'gc>(
-    activation: &mut Activation<'_, 'gc, '_>,
+    activation: &mut Activation<'_, 'gc>,
     this: Object<'gc>,
     _args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -78,7 +78,7 @@ fn close<'gc>(
 }
 
 fn send<'gc>(
-    activation: &mut Activation<'_, 'gc, '_>,
+    activation: &mut Activation<'_, 'gc>,
     this: Object<'gc>,
     args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -97,7 +97,7 @@ fn send<'gc>(
 }
 
 fn on_connect<'gc>(
-    _activation: &mut Activation<'_, 'gc, '_>,
+    _activation: &mut Activation<'_, 'gc>,
     _this: Object<'gc>,
     _args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -105,7 +105,7 @@ fn on_connect<'gc>(
 }
 
 fn on_close<'gc>(
-    _activation: &mut Activation<'_, 'gc, '_>,
+    _activation: &mut Activation<'_, 'gc>,
     _this: Object<'gc>,
     _args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -114,7 +114,7 @@ fn on_close<'gc>(
 }
 
 fn on_data<'gc>(
-    activation: &mut Activation<'_, 'gc, '_>,
+    activation: &mut Activation<'_, 'gc>,
     this: Object<'gc>,
     args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -136,7 +136,7 @@ fn on_data<'gc>(
 }
 
 fn on_xml<'gc>(
-    _activation: &mut Activation<'_, 'gc, '_>,
+    _activation: &mut Activation<'_, 'gc>,
     _this: Object<'gc>,
     _args: &[Value<'gc>],
 ) -> Result<Value<'gc>, Error<'gc>> {
@@ -151,7 +151,7 @@ pub fn create_proto<'gc>(
     fn_proto: Object<'gc>,
 ) -> Object<'gc> {
     let xml_socket_proto = XmlSocketObject::empty(gc_context, Some(proto));
-    let object = xml_socket_proto.as_script_object().unwrap();
+    let object = xml_socket_proto.raw_script_object();
     define_properties_on(PROTO_DECLS, gc_context, object, fn_proto);
     xml_socket_proto
 }

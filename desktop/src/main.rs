@@ -123,7 +123,7 @@ struct Opt {
         long = "xmlsocket",
         short,
         default_value = "disabled",
-        arg_enum,
+        value_enum,
         value_parser
     )]
     xml_socket_behavior: XmlSocketBehavior,

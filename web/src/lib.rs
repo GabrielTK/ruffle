@@ -81,14 +81,6 @@ struct RuffleInstance {
     log_subscriber: Arc<Layered<WASMLayer, Registry>>,
 }
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_name = Error)]
-    type JsError;
-
-    #[wasm_bindgen(constructor, js_class = "Error")]
-    fn new(message: &str) -> JsError;
-}
 
 #[wasm_bindgen]
 extern "C" {
@@ -108,7 +100,7 @@ extern "C" {
     fn close(this: &JsSocket);
 }
 
-#[wasm_bindgen(module = "./ruffle-player.ts")]
+#[wasm_bindgen(raw_module = "./ruffle-player.ts")]
 extern "C" {
     #[wasm_bindgen(extends = EventTarget)]
     #[derive(Clone)]
