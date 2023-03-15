@@ -39,7 +39,7 @@ use crate::limits::ExecutionLimit;
 use crate::loader::{LoadBehavior, LoadManager};
 use crate::locale::get_current_date_time;
 use crate::prelude::*;
-use crate::socket::XmlSockets;
+use crate::xml_socket::XmlSockets;
 use crate::string::AvmString;
 use crate::stub::StubCollection;
 use crate::tag_utils::SwfMovie;

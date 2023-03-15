@@ -21,7 +21,7 @@ use crate::loader::LoadManager;
 use crate::player::Player;
 use crate::prelude::*;
 use crate::stub::StubCollection;
-use crate::socket::XmlSockets;
+use crate::xml_socket::XmlSockets;
 use crate::tag_utils::{SwfMovie, SwfSlice};
 use crate::timer::Timers;
 use core::fmt;

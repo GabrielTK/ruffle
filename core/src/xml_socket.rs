@@ -118,7 +118,9 @@ impl<'gc> XmlSockets<'gc> {
         if let Some(Socket { send_buffer, .. }) = self.0.get_mut(handle) {
             let mut new_data = data;
             new_data.push(0); // XML Socket messages are null-terminated
+            //tracing::info!("XMLSocket: Sent {:?}", new_data);
             send_buffer.push_back(new_data);
+            ;
         }
     }
 
@@ -222,6 +224,13 @@ impl<'gc> XmlSockets<'gc> {
                     );
                 }
                 SocketAction::Data(handle, data) => {
+                    let mut new_data = data;
+                    let terminator = new_data.last().copied();
+                    if let Some(terminator) = terminator {
+                        if terminator == 0u8 {
+                            new_data.pop();
+                        }
+                    }
                     let target = activation
                         .context
                         .xml_sockets
@@ -230,7 +239,8 @@ impl<'gc> XmlSockets<'gc> {
                         .expect("only valid handles in SocketAction")
                         .target;
 
-                        let data = AvmString::new_utf8_bytes(activation.context.gc_context, &data);
+                        let data = AvmString::new_utf8_bytes(activation.context.gc_context, &new_data);
+                        tracing::info!("XMLSocket: Received: {:?}", data);
 
                     let _ = TObject::call_method(
                         &target,

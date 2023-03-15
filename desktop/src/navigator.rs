@@ -9,7 +9,7 @@ use ruffle_core::backend::navigator::{
 };
 use ruffle_core::indexmap::IndexMap;
 use ruffle_core::loader::Error;
-use ruffle_core::socket::XmlSocketConnection;
+use ruffle_core::xml_socket::XmlSocketConnection;
 use std::collections::{HashSet, VecDeque};
 use std::io::{ErrorKind, Read, Write};
 use std::net::TcpStream;

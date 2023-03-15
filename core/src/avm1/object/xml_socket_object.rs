@@ -5,7 +5,7 @@ use gc_arena::{Collect, GcCell, MutationContext};
 use crate::{
     avm1::{Activation, Error, ScriptObject},
     impl_custom_object,
-    socket::XmlSocketHandle,
+    xml_socket::XmlSocketHandle,
 };
 
 use super::{Object, TObject};

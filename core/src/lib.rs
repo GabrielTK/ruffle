@@ -36,7 +36,7 @@ pub mod loader;
 mod locale;
 mod player;
 mod prelude;
-pub mod socket;
+pub mod xml_socket;
 pub mod string;
 pub mod tag_utils;
 pub mod timer;

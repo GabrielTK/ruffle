@@ -1,7 +1,7 @@
 //! Browser-related platform functions
 
 use crate::loader::Error;
-use crate::socket::XmlSocketConnection;
+use crate::xml_socket::XmlSocketConnection;
 use crate::string::WStr;
 use indexmap::IndexMap;
 use std::future::Future;

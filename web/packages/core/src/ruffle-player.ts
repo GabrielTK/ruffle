@@ -1294,9 +1294,28 @@ export class RufflePlayer extends HTMLElement {
                     const socket = await this.createWebSocket(handler);
                     socket.binaryType = "arraybuffer";
                     socket.addEventListener("message", (event) => {
-                        console.log("[XMLSocket] Recv", event.data);
-
-                        pendingReceive.push(new Uint8Array(event.data));
+                        const dataArray = new Uint8Array(event.data);
+                        const splitArray: number[][] = [[]];
+                        let splitIndexer = 0;
+                        for (let i = 0; i < event.data.byteLength; i++) {
+                            const byte = dataArray[i] as number;
+                            splitArray[splitIndexer]!.push(byte);
+                            if (byte === 0x00) {
+                                splitArray.push([]);
+                                splitIndexer += 1;
+                                console.log(
+                                    "[XMLSocket] The proxy server bundled multiple messages into one. Fixing."
+                                );
+                            }
+                        }
+                        for (const split of splitArray) {
+                            pendingReceive.push(new Uint8Array(split));
+                        }
+                        console.log(
+                            "[XMLSocket] Received " +
+                                splitArray.length +
+                                " messages"
+                        );
                     });
                     socket.addEventListener("close", () => {
                         console.log("S XML Socket closed");
