@@ -82,23 +82,6 @@ struct RuffleInstance {
 }
 
 
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen]
-    type JsSocket;
-
-    #[wasm_bindgen(method, js_name = "isOnline")]
-    fn is_connected(this: &JsSocket) -> bool;
-
-    #[wasm_bindgen(method)]
-    fn send(this: &JsSocket, buf: Vec<u8>);
-
-    #[wasm_bindgen(method)]
-    fn poll(this: &JsSocket) -> Option<Vec<u8>>;
-
-    #[wasm_bindgen(method)]
-    fn close(this: &JsSocket);
-}
 
 #[wasm_bindgen(raw_module = "./ruffle-player.ts")]
 extern "C" {
@@ -138,6 +121,25 @@ extern "C" {
 
     #[wasm_bindgen(method, js_name = "openVirtualKeyboard")]
     fn open_virtual_keyboard(this: &JavascriptPlayer);
+}
+
+#[wasm_bindgen(raw_module="./ruffle-player")]
+extern "C" {
+    #[wasm_bindgen]
+    #[derive(Clone)]
+    pub type JsSocket;
+
+    #[wasm_bindgen(method, js_name = "isOnline")]
+    fn is_connected(this: &JsSocket) -> bool;
+
+    #[wasm_bindgen(method)]
+    fn send(this: &JsSocket, buf: Vec<u8>);
+
+    #[wasm_bindgen(method)]
+    fn poll(this: &JsSocket) -> Option<Vec<u8>>;
+
+    #[wasm_bindgen(method)]
+    fn close(this: &JsSocket);
 }
 
 struct JavascriptInterface {

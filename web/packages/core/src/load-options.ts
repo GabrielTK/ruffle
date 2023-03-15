@@ -336,6 +336,16 @@ export interface BaseLoadOptions {
      * @default true
      */
     polyfills?: boolean;
+
+    /**
+     * The TCP Hosts to Proxy over WebSockets.
+     *
+     * Formatted as a dictionary, where the key is either "host:port" or "*:port" and the value is the WebSockets URL.
+     *
+     * @example {"gameserver.game.com:6899": "wss://webhost.com/gamews"}
+     * @default {}
+     */
+    socketOverrides?: { [original: string]: string };
 }
 
 /**

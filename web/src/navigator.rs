@@ -266,29 +266,41 @@ impl NavigatorBackend for WebNavigatorBackend {
         if let Some(promise) = self.js_player.connect_xml_socket(host, port) {
             let mutex: Box<dyn XmlSocketConnection> = Box::new(PendingConnectionSocket);
             let mutex = Rc::from(RefCell::from(mutex));
-
+            tracing::debug!("connect_xml_socket promise: {:?}", promise);
             {
                 let mutex = mutex.clone();
 
                 self.spawn_future(Box::pin(async move {
-                    let socket = JsFuture::from(promise)
-                        .await
-                        .ok()
-                        .and_then(|v| v.dyn_into::<JsSocket>().ok());
-
-                    *mutex.borrow_mut() = if let Some(socket) = socket {
-                        Box::new(socket)
-                    } else {
-                        Box::new(DenySocket)
-                    };
+                    let object = JsFuture::from(promise);
+                    tracing::debug!("connect_xml_socket resolved: {:?}", object);
+                    match object.await {
+                        Ok(object) => {
+                            tracing::debug!("connect_xml_socket resolved to {:?}", object);
+                            let socket = object.dyn_into::<JsSocket>().ok(); 
+                            *mutex.borrow_mut() = if let Some(socket) = socket {
+                                Box::new(socket)
+                            } else {
+                                tracing::warn!("connect_xml_socket failed");
+                                Box::new(DenySocket)
+                            };
+                        },
+                        Err(object) => {
+                            tracing::error!("connect_xml_socket error: {:?}", object);
+                            return Ok(());
+                        }
+                    }
+                    
 
                     Ok(())
                 }));
             }
 
             return Some(Box::new(DelegatedSocketConnection(mutex)));
+        } else {
+            tracing::warn!("connect_xml_socket not implemented");
+            None
         }
-        None
+        
     }
 }
 

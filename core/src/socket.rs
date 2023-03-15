@@ -106,15 +106,19 @@ impl<'gc> XmlSockets<'gc> {
         if let Some(internal) = backend.connect_xml_socket(host, port) {
             let socket = Socket::new(target, internal);
             let handle = self.0.insert(socket);
+            tracing::info!("XMLSocket: New Connection {}:{}", host, port);
             Some(handle)
         } else {
+            tracing::warn!("XMLSocket: No Handler {}:{}", host, port);
             None
         }
     }
 
     pub fn send(&mut self, handle: XmlSocketHandle, data: Vec<u8>) {
         if let Some(Socket { send_buffer, .. }) = self.0.get_mut(handle) {
-            send_buffer.push_back(data);
+            let mut new_data = data;
+            new_data.push(0); // XML Socket messages are null-terminated
+            send_buffer.push_back(new_data);
         }
     }
 
@@ -226,8 +230,7 @@ impl<'gc> XmlSockets<'gc> {
                         .expect("only valid handles in SocketAction")
                         .target;
 
-                    let data =
-                        AvmString::new_utf8(activation.context.gc_context, UTF_8.decode(&data).0);
+                        let data = AvmString::new_utf8_bytes(activation.context.gc_context, &data);
 
                     let _ = TObject::call_method(
                         &target,

@@ -57,14 +57,14 @@ declare global {
     }
 }
 
-interface JsSocket {
+export interface JsSocket {
     isOnline(): boolean;
     send(buf: Uint8Array): void;
     poll(): Uint8Array | null;
     close(): void;
 }
 
-class JsSocket {}
+export class JsSocket {}
 
 const wrapJsSocket = (socket: JsSocket) =>
     Object.assign(new JsSocket(), socket);
@@ -1248,23 +1248,23 @@ export class RufflePlayer extends HTMLElement {
         }
         return null;
     }
-
-    onXmlSocketConnect?: (
-        host: string,
-        port: number,
-        handle: {
-            receive: (data: Uint8Array) => void;
-            close: () => void;
-        }
-    ) =>
-        | undefined
-        | Promise<
-              | undefined
-              | {
-                    send: (data: Uint8Array) => void;
-                    close: () => void;
-                }
-          >;
+    /**
+     * Creates a WebSocket Connection as a Promise
+     *
+     * @param url The URL to Connect to.
+     * @returns Promise<WebSocket>
+     */
+    createWebSocket(url: string) {
+        return new Promise<WebSocket>(function (resolve, reject) {
+            const server = new WebSocket(url);
+            server.onopen = function () {
+                resolve(server);
+            };
+            server.onerror = function (err) {
+                reject(err);
+            };
+        });
+    }
 
     /**
      * When a movie tries to use the XMLSocket API to connect to some TCP server.
@@ -1277,32 +1277,53 @@ export class RufflePlayer extends HTMLElement {
      * @internal
      * @ignore
      */
+
     connectXmlSocket(
         host: string,
         port: number
     ): Promise<JsSocket | null> | null {
-        let online = true;
         const pendingReceive: Uint8Array[] = [];
         try {
+            const original = `${host}:${port}`;
             const handler =
-            this.onXmlSocketConnect &&
-            this.onXmlSocketConnect(host, port, {
-                receive: (data) => pendingReceive.push(data),
-                close: () => (online = false),
-            });
-            if (handler)
+                this.loadedConfig?.socketOverrides &&
+                (this.loadedConfig?.socketOverrides[original] ??
+                    this.loadedConfig?.socketOverrides[`*:${port}`]);
+            if (handler) {
                 return (async () => {
-                    const socket = await handler;
-                    if (!socket) return null;
-                    return wrapJsSocket({
-                        isOnline: () => online,
-                        send: (data) => socket.send(data),
+                    const socket = await this.createWebSocket(handler);
+                    socket.binaryType = "arraybuffer";
+                    socket.addEventListener("message", (event) => {
+                        console.log("[XMLSocket] Recv", event.data);
+
+                        pendingReceive.push(new Uint8Array(event.data));
+                    });
+                    socket.addEventListener("close", () => {
+                        console.log("S XML Socket closed");
+                    });
+                    socket.addEventListener("error", (e) => {
+                        console.log("E XML Socket error", e);
+                    });
+                    console.log("New XMLSocket Connection established.");
+                    const conn = wrapJsSocket({
+                        isOnline: () => socket.readyState === WebSocket.OPEN,
+                        send: (data) => {
+                            socket.send(data);
+                        },
                         poll: () => pendingReceive.pop() || null,
                         close: () => socket.close(),
                     });
+                    console.log("Connection:", conn);
+                    return conn;
                 })();
+            } else {
+                console.log("No XMLSocket Handler for " + original);
+            }
         } catch (err) {
-            console.warn('XMLSocket Connection refused because of an unhandled error', err);
+            console.warn(
+                "XMLSocket Connection refused because of an unhandled error",
+                err
+            );
         }
         return null;
     }

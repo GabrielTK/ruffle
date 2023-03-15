@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="CPP_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/core/build_playerglobal/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/macros/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/core/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/desktop/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/exporter/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/render/canvas/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/render/naga-agal/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/render/naga-agal/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/render/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/render/webgl/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/render/wgpu/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/scanner/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/swf/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/swf/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/swf/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/input-format/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/tests/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/video/software/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/video/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/web/common/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/web/packages/extension/safari/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/web/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/wstr/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

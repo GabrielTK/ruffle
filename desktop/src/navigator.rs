@@ -255,11 +255,19 @@ impl NavigatorBackend for ExternalNavigatorBackend {
 
         match (is_allowed, self.xml_sockets_behavior) {
             (false, XmlSocketBehavior::Unrestricted) | (true, _) => {
+                tracing::info!("[WS-Unrestricted] Connecting to XML socket: {} (port {})", host, port);
                 Some(Box::new(TcpXmlSocket::connect(host, port)))
             }
-            (false, XmlSocketBehavior::Disabled) => None,
-            (false, XmlSocketBehavior::Deny) => Some(Box::new(DenySocket)),
+            (false, XmlSocketBehavior::Disabled) => {
+                tracing::warn!("[WS-Disabled] Denying connection to XML socket: {} (port {})", host, port);
+                None
+            },
+            (false, XmlSocketBehavior::Deny) => {
+                tracing::warn!("[WS-Deny] Denying connection to XML socket: {} (port {})", host, port);
+                Some(Box::new(DenySocket))
+            },
             (false, XmlSocketBehavior::Ask) => {
+                tracing::warn!("[WS-Ask] Asking connection to XML socket: {} (port {})", host, port);
                 let mutex = Arc::new(Mutex::new(None));
 
                 {
